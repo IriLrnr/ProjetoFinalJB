@@ -1,10 +1,11 @@
-# Projeto Final
+# Final Project
 
-Esse repositório é dedicado ao projeto final da disciplina "Análise Exploratória de Dados".
+This repository is dedicated to the final project of the discipline "Data Explorative Analysis".
 
-O tema do projeto é a análise da posição dos individuos em um modelo de Evolução e Especiação (REF), e programado por Irina Lerner, como Iniciação Científica financiada pela FAPESP.
+The theme of the project is the analysis of the position of individuals in a model of Evolution and Speciation by Marcus Aguiar, and programmed by Irina Lerner, as a Scientific Initiation funded by FAPESP.
 
-Caso queira encontrar o código do modelo, pode acessá-lo em https://github.com/IriLrnr/EvIBM. Lá estão todas as intruções para rodar o código.
+If you want to find the model code, you can access it at https://github.com/IriLrnr/EvIBM. There you can find the instructions for running the code.
 
-O contexto deste trabalho é um problema: durante a execução do código, os individuos estão se aglutinando, e isso não é previsto pelo modelo. Para resolver o problema, é preciso estudá-lo e analisar o mapa das posições dos indivíduos.
+The context for this work is a problem: during code execution, individuals are accumulating together in points of the space, but the previous implementation of the model predicts that they should be homogenicaly distributed. To solve the problem, it is necessary to study it and analyze the map of the individuals' positions, and other features of the program.
+
 
