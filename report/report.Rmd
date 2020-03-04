@@ -3,12 +3,12 @@ title: "The Agglutination Problem"
 author: "Irina Lerner"
 date: "03/03/2020"
 output: html_document
-bibliography: "../citation/refs.bib"
-csl: "../citation/ecology.csl"
+bibliography: "../citation/ref.bib"
+csl: "../citation/nature.csl"
 ---
 
 # Introduction
 
-O presente trabalho refere-se ao estudo de um problema, que surgiu durante a implementação do IBM evolução e especiação desenvolvido por Marcus Aguiar (Ref), 
+O presente trabalho refere-se ao estudo de um problema, que surgiu durante a implementação do IBM evolução e especiação desenvolvido por Marcus Aguiar [@aguiarGlobalPatternsSpeciation2009], 
 
 # Bibliography
