@@ -3,15 +3,15 @@ library(ggplot2)
 library(gridExtra)
 
 # read the csv files for distribution
-dis.twentyfivepc <- read.csv("./data/position/indlocV1_25.csv", sep = ";")
-dis.fiftypc <- read.csv("./data/position/indlocV1_50.csv", sep = ";")
-dis.seventyfivepc <- read.csv("./data/position/indlocV1_75.csv", sep = ";")
-dis.hundredpc <- read.csv("./data/position/indlocV1_100.csv", sep = ";")
+dis.twentyfivepc <- read.csv("./data/position/indlocV3_25.csv", sep = ";")
+dis.fiftypc <- read.csv("./data/position/indlocV3_50.csv", sep = ";")
+dis.seventyfivepc <- read.csv("./data/position/indlocV3_75.csv", sep = ";")
+dis.hundredpc <- read.csv("./data/position/indlocV3_100.csv", sep = ";")
 
 # create each individual image
 individuals.fig.twentyfive <- 
   ggplot() +  
-  geom_point(data = dis.twentyfivepc, aes(x = x, y = y, color = factor(sp)), size=0.2, alpha=0.5, show.legend = FALSE)+
+  geom_point(data = subset(dis.twentyfivepc), aes(x = x, y = y, color = factor(sp)), size=0.2, alpha=0.5, show.legend = FALSE)+
   guides(fill=FALSE, shape="none") +
   labs(x = "", y="") +  
   xlim(0, 100) +
@@ -68,14 +68,14 @@ individuals.fig.hundred <-
 multi <- grid.arrange(individuals.fig.twentyfive, individuals.fig.fifty, individuals.fig.seventyfive, individuals.fig.hundred, nrow = 2)
 
 # Create the multiple image
-ggsave("./figs/position/final_distribution_V1_multi.png", multi, width=5.5, height=4.5)
+ggsave("./figs/position/final_distribution_V3_multi.png", multi, width=5.5, height=4.5)
 
 
 # read the csv files for number of species
-nsp.twentyfivepc <- read.csv("./data/species/numspV1_25.csv", sep = ";")
-nsp.fiftypc <- read.csv("./data/species/numspV1_50.csv", sep = ";")
-nsp.seventyfivepc <- read.csv("./data/species/numspV1_75.csv", sep = ";")
-nsp.hundredpc <- read.csv("./data/species/numspV1_100.csv", sep = ";")
+nsp.twentyfivepc <- read.csv("./data/species/numspV3_25.csv", sep = ";")
+nsp.fiftypc <- read.csv("./data/species/numspV3_50.csv", sep = ";")
+nsp.seventyfivepc <- read.csv("./data/species/numspV3_75.csv", sep = ";")
+nsp.hundredpc <- read.csv("./data/species/numspV3_100.csv", sep = ";")
 
 number.fig.twentyfive <-
   ggplot() +  
@@ -83,7 +83,7 @@ number.fig.twentyfive <-
   guides(fill=FALSE, shape="none") +
   labs(x = "Generation", y="Number of species") +  
   xlim(0, nrow(nsp.twentyfivepc)) +
-  ylim(0, 80) +
+  ylim(0, 20) +
   theme_bw()+
   theme(text = element_text(size=12, family="Helvetica"),
         panel.grid.minor = element_blank(),panel.grid.major = element_blank(),
@@ -147,5 +147,5 @@ number.fig.hundred <-
 
 multisp <- grid.arrange(number.fig.twentyfive, number.fig.fifty, number.fig.seventyfive, number.fig.hundred, nrow = 2)
 
-ggsave("./figs/species/number_spp_V1_multi.png", multisp, width=5.5, height=4.5)
+ggsave("./figs/species/number_spp_V3_multi.png", multisp, width=5.5, height=4.5)
 

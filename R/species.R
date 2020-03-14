@@ -2,11 +2,11 @@
 library(ggplot2)
 
 # Read data
-number.spp=read.csv(file ="./data/species/numspV1.csv", head = TRUE, sep=";")
+number.spp <- read.csv(file ="./data/species/numspV3.csv", head = TRUE, sep=";")
 
 # Define limits for the 
-max.spp=max(number.spp[,2])
-max.time=max(number.spp[,1])
+max.spp <- max(number.spp[,2])
+max.time <- max(number.spp[,1])
 
 number.fig <-
   ggplot() +  
@@ -21,7 +21,5 @@ number.fig <-
         legend.margin = margin(-4, 4, -1, -1),
         plot.margin = unit(c(0.5,1.5,0.1,0.1), "cm"))
 
-number.fig
-
-ggsave("./figs/species/number_spp_V1.png", number.fig, width=5.5, height=4.5)
+ggsave("./figs/species/number_spp_V3.png", number.fig, width=5.5, height=4.5)
 
