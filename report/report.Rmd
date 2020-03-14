@@ -2,7 +2,7 @@
 title: "The Agglutination Problem" 
 author: "Irina Lerner"
 date: "03/03/2020"
-output: html_document
+output: md_document
 bibliography: "../citation/refs.bib"
 csl: "../citation/nature.csl"
 ---
