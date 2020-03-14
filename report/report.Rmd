@@ -7,19 +7,31 @@ bibliography: "../citation/refs.bib"
 csl: "../citation/nature.csl"
 ---
 
-# Introduction
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-The current work refers to the study of a problem wich arised during the implementation of the IBM of Evolution and Speciation developed by Marcus Aguiar [@aguiarGlobalPatternsSpeciation2009].
+## Introduction
 
-The model begins with a single species, homogeneously distributed over a two-dimensional space, of identical individuals (genomically). This species is composed by individuals, who reproduce sexually, leave their offspring in the space, and die.
+The current work refers to the study of a problem wich arised during the implementation of the IBM of Evolution and Speciation developed by Marcus Aguiar [@aguiar2009].
+
+The model begins with a single species, homogeneously distributed over a two-dimensional space, of identical individuals (genomically). This species is composed by individuals, who find a partner reproduce sexually, leave their offspring in the space, and die.
 
 As the generations pass, the individuals accumulate differences, and speciation occurs when there is no possible genetic flow between two groups of individuals anymore.
 
-The code is explained in detail in this Git Repository https://github.com/IriLrnr/EvIBM, specificaly, the file DETAILED.md, but an overview will be given.
+The code is explained in detail in this Git Repository https://github.com/IriLrnr/EvIBM, specificaly, the file DETAILED.md. In here, the results will be analyzed.
+
+Because the code is based on a model that has already been implemented before, we have some results to look for:
+
+- After 1000 generations, the formation of 20 to 30 species.
+
+- The growth begins around generation 500
+
+- The individuals keep homogeneously distributed
 
 In the code, to represent this population, a graph is implemented, where the vertices corespond to individuals, and an arc exist between two dots if the two individuals are genetically compatible, that is, if their genome has at maximum a certain number of differences.
 
-As the generations pass, species connect and desconnect, as shown bellow (it can be seen forward or backward)
+During the simulation, species connect and desconnect, as shown bellow (it can be seen forward or backward)
 
 <center>
 
@@ -29,24 +41,104 @@ As the generations pass, species connect and desconnect, as shown bellow (it can
 
 In the image, each set of dots of the same color compose a species. As soon as genetic flow is stablished between a red and a yellow individual, they become the same species.
 
-In graph theory, a subgraph that is not connected to anyone else, is a _**maximal connected component**_, as are the collection of dots of the same color and their arcs in the image above. That is what we are going to call a **species**. This is the genetic flow definition of species [@petitGeneFlowSpecies2009].
+In graph theory, a subgraph that is not connected to anyone else, is a _**maximal connected component**_, as are the collection of dots of the same color and their arcs in the image above. That is what we are going to call a **species**. This is the genetic flow definition of species [@petit2009].
 
-This model is spatial model, so the positioning of individuals plays a central roll in species formation. In the current version, the species are agglutinating in points in the space, and resulting in a faster-than-expected exponential growth of the number of species - it works as a parapatric model, when it should be allopatric. The result is this behaviour of the position in the first ten generations:
+This model is spatial model, so the positioning of individuals plays a central roll in species formation. In the current version, the species are agglutinating in points in the space, and resulting in a faster-than-expected exponential growth of the number of species - it works as a parapatric model, when it should be allopatric. The result is this behaviour of the position in the first twenty generations:
 
 <center>
-this is a test for gif
-![Alt Text](../gifs/agglutination.gif)
+
+![](../gifs/agglutination.gif)
 
 </center>
 
-It should be like this, for all the iterations
+While the expectations for the location is for the population to continue homogenically distributed. The goal of this report is to analyse graphically what is causing the agglutination, using the position gifs and the graphic of the number of species per time.
+
+## Analysis
+
+### Graphics and Gifs
+
+The methods of the implementation of the model is described in the [EvIBM repository](#https://github.com/IriLrnr/EvIBM). It has more than one branch and the output is different. The branch used for this report is the JB branch. It outputs the tables used to make the gifs and images. Look for the git tags for the right images.
+
+The gif for studying position is created in the `space.R` file. It recieves the table of the form
+
+```{r table, eval=TRUE, echo=FALSE}
+ind.loc <- read.csv("../data/position/indlocV1.csv", sep = ";")
+head(ind.loc)
+```
+
+where `id` is the individual, `x` and `y` are it's coordinates, `sp` is it's species, and `gen` is the generation they belong, and returs a gif, where each frame corresponds for the distribution of one generation. The full simulation gif is
 
 <center>
-Another gif without collapse
+
+![](../gifs/completepositionV1.gif)
 </center>
 
-# Methods
+It shows the movement of the individuals throughout the simulation, indicating some problems: there is always around 1000 individuals. Why are they agglutinating? Why do they only move in lines?
 
-When the code in the [EvIBM repository](#https://github.com/IriLrnr/EvIBM), in branch "position" is compiled, the output is a number of files of the form  
+In the gif above, we can watch species form. How many? The R script `species.R` recieves a table of the form
+
+```{r species, eval=TRUE, echo=FALSE}
+number.species <- read.csv("../data/species/numspV1.csv", sep = ";")
+head(number.species)
+```
+
+where `gen` is the generation and `sp` is the number of species in that generation. It outputs a simple plot
+
+<center>
+
+![](../figs/species/number_spp_V1.png)
+
+</center>
+
+The format of ths graphic is right, but the slope is too inclined, it is happening before it should. The amound of species is also bigger than the model pedicts.
+
+Both images suggest implementation problems.
+
+### Changes in the code
+
+Some functions of the implementation cannot be tested outside the simulation, and some problems, like agglutination, may appear as a "background mistake". Those functions are the ones responsible for reproduction, positioning, and choosing partner.
+
+The features of the model, inside those functions, that may produce those errors are (I think):
+
+  - The dispersal of offspring
+  - The fluctuation in `Reproduction`
+  
+The dispersion is a characteristic of the model, each offspring has 99% chance of being in the same spot as the focal parent, and 1% chance of dispersal inside the radius of the parent. 
+
+(put code here)
+
+This dispersal rate result in collapse, but increasing this rate gave strange results. The dispersion with 1% chance of dispersal is in the gif above. If we change it we have the distribution of the last generation in the simulation looking like this
+
+(images dist here)
+
+and the number of species like this.
+
+(number of species images)
+
+The results show that something is wrong. Although patterns in ecology are normal, the reason for this is at this code chunk: the dispersion should cover all the directions around the focal. But it is clear in the code that `x` and `y` are always both positive, or both negative, wich is just a mistake. Changing the code, and using the "right" (1%) chance of dispersion, we obtain the distribution below:
+
+(put code and new gif here)
+
+(images dist here)
+
+(nspecies images here)
+
+Although the distribution looks better, none of the tests above gave satisfactory enough results. Something is still wrong, and maybe the problem is in the `Reproduction` function. 
+
+The intention of making the population fluctuate, is to add realism to the model. Lets take a look at the reproduction function
+
+(put rep func here)
+
+In the firt version of the model, let's call it V1 (it is git tagged in branch JB), the fluctiuation is done by simulating a sort with reposition. Each individual has a chance to reproduce, 63%, and if not, one of its neighbors is selected to be focal in it's place. It if can't find a partner, one more neighbor is selected, and if not found, the population decreases in one individual. If population is below 1000 individuals (this is the used size for `info->number_individuals` in the simulations), the individuals who are in the least dense regions have a chance to reproduce, increasing the population. 
+
+The problem is that this fluctiuation is very artificial. There is a better way to do this.
+
+(TALK ABOUT POISSON, ADD DATA, RUN TESTS)
+
+The function `Choose_Mate` determines the partner for a focal individual. 
+
+##  Results
+
+In the current version of the model, described in the main branch of the [EvIBM repository](#https://github.com/IriLrnr/EvIBM), the agglutination and species formation 
 
 # Bibliography
