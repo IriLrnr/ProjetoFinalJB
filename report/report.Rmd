@@ -105,17 +105,31 @@ The features of the model, inside those functions, that may produce those errors
   
 The dispersion is a characteristic of the model, each offspring has 99% chance of being in the same spot as the focal parent, and 1% chance of dispersal inside the radius of the parent. 
 
-(put code here)
+```{c, test-c, eval=FALSE, echo=TRUE}
+// In EvIBM, function Offspring_Position(), library functions.h
+if (random_number() <= 0.01) {
+  movement_y = random_number()*info->radius;
+	movement_x = random_number()*info->radius;
+	if (random_number() < 0.5) {
+		movement_x = -movement_x;
+		movement_y = -movement_y;
+	}
+  //...
+}
+```
 
-This dispersal rate result in collapse, but increasing this rate gave strange results. The dispersion with 1% chance of dispersal is in the gif above. If we change it we have the distribution of the last generation in the simulation looking like this
+This dispersal rate result in collapse, but increasing this rate gives strange results. The dispersion with 1% chance of dispersal is in the gif above. If we change it we have the distribution of the last generation in the simulation looking like this
 
-(images dist here)
+![](../figs/position/final_distribution_V1_multi.png)
 
 and the number of species like this.
 
-(number of species images)
+![](../figs/species/number_spp_V1_multi.png)
 
-The results show that something is wrong. Although patterns in ecology are normal, the reason for this is at this code chunk: the dispersion should cover all the directions around the focal. But it is clear in the code that `x` and `y` are always both positive, or both negative, wich is just a mistake. Changing the code, and using the "right" (1%) chance of dispersion, we obtain the distribution below:
+
+The results show that something is wrong. Although patterns in ecology are normal, the reason for this "stripes" of individuals and empty space is at this code chunk: the dispersion should cover all the directions around the focal. But it is clear in the code that `x` and `y` are always both positive, or both negative, wich is just a mistake. This will reflect on the growth of the number of species, because it changes the number of encounters between possible partners. When dispersal is too high, there is no formation of species, wich is predicted.
+
+Changing the code, and using the "right" (1%) chance of dispersion, we obtain the distribution below:
 
 (put code and new gif here)
 
@@ -135,10 +149,5 @@ The problem is that this fluctiuation is very artificial. There is a better way 
 
 (TALK ABOUT POISSON, ADD DATA, RUN TESTS)
 
-The function `Choose_Mate` determines the partner for a focal individual. 
-
-##  Results
-
-In the current version of the model, described in the main branch of the [EvIBM repository](#https://github.com/IriLrnr/EvIBM), the agglutination and species formation 
 
 # Bibliography
