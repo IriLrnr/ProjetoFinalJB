@@ -36,10 +36,8 @@ genome has at maximum a certain number of differences.
 During the simulation, species connect and desconnect, as shown bellow
 (it can be seen forward or backward)
 
-<center>
 ![](../figs/report/species.png)
 
-</center>
 In the image, each set of dots of the same color compose a species. As
 soon as genetic flow is stablished between a red and a yellow
 individual, they become the same species.
@@ -57,10 +55,8 @@ faster-than-expected exponential growth of the number of species - it
 works as a parapatric model, when it should be allopatric. The result is
 this behaviour of the position in the first twenty generations:
 
-<center>
 ![](../gifs/agglutination.gif)
 
-</center>
 While the expectations for the location is for the population to
 continue homogenically distributed. The goal of this report is to
 analyse graphically what is causing the agglutination, using the
@@ -93,9 +89,8 @@ it’s species, and `gen` is the generation they belong, and returs a gif,
 where each frame corresponds for the distribution of one generation. The
 full simulation gif is
 
-<center>
 ![](../gifs/complete_position_V1.gif)
-</center>
+
 It shows the movement of the individuals throughout the simulation,
 indicating some problems: there is always around 1000 individuals. Why
 are they agglutinating? Why do they only move in lines?
@@ -114,10 +109,8 @@ In the gif above, we can watch species form. How many? The R script
 where `gen` is the generation and `sp` is the number of species in that
 generation. It outputs a simple plot
 
-<center>
 ![](../figs/species/number_spp_V1.png)
 
-</center>
 The format of ths graphic is right, but the slope is too inclined, it is
 happening before it should. The amound of species is also bigger than
 the model pedicts.
