@@ -312,13 +312,211 @@ I expected good results, but…
 more agglutinating and weird behaviour of number of species. And
 changing the dispersal rate doesn’t make things very much better:
 
-![](../figs/position/final_distribution_V2_multi.png)
+![](../figs/position/final_distribution_V3_multi.png)
 
 Different and more agglutinating patters arise.
 
-![](../figs/species/number_spp_V2_multi.png)
+![](../figs/species/number_spp_V3_multi.png)
 
-I’m out of ideas, so the problem was not solved. I need more ideas.
+Looking again, carefully, into the positioning functions, I noticed a
+problem.
+
+The first function, the one that checks if an individual and a mate are
+one in rage of other, in all the versions cited here, looks like this:
+
+    // In EvIBM, function Verify_Distance(), library functions.h
+    int Verify_Distance (Population progenitors, int focal, int mate, Parameters info, int increase)
+        {
+            int x_compatible, y_compatible, x_out_left, x_out_right, y_out_up, y_out_down;
+
+            y_compatible = 0;
+            x_compatible = 0;
+
+            x_out_left = 0;
+            x_out_right = 0;
+            y_out_up = 0;
+            y_out_down = 0;
+
+            /* If an individual ratio reaches an end of the lattice, it will look on the other side, because the lattice work as a toroid */
+            if (progenitors[mate]->x <= progenitors[focal]->x + info->radius + increase && progenitors[mate]->x >= progenitors[focal]->x - info->radius + increase) {
+                x_compatible = 1;
+            }
+            if (progenitors[mate]->y <= progenitors[focal]->y + info->radius + increase && progenitors[mate]->y >= progenitors[focal]->y - info->radius + increase) {
+                y_compatible = 1;
+            }
+
+            if (!x_compatible) {
+                if (progenitors[focal]->x + info->radius + increase > info->lattice_width) {
+                    x_out_right = progenitors[focal]->x + info->radius + increase - info->lattice_width;
+                    if (progenitors[mate]->x <= x_out_right) {
+                        x_compatible = 1;
+                    }
+                }
+                else if (progenitors[focal]->x - info->radius + increase < 0) {
+                    x_out_left = progenitors[focal]->x - info->radius + increase + info->lattice_width;
+                    if (progenitors[mate]->x >= x_out_left) {
+                        x_compatible = 1;
+                    }
+                }
+            }
+
+            if (!y_compatible) {
+                if (progenitors[focal]->y + info->radius + increase > info->lattice_lenght) {
+                    y_out_up = progenitors[focal]->y + info->radius + increase - info->lattice_lenght;
+                    if (progenitors[mate]->y <= y_out_up) {
+                        y_compatible = 1;
+                    }
+                }
+                else if (progenitors[focal]->y - info->radius + increase < 0) {
+                    y_out_down = progenitors[focal]->y - info->radius + increase + info->lattice_lenght;
+                    if (progenitors[mate]->y >= y_out_down) {
+                        y_compatible = 1;
+                    }
+                }
+            }
+
+            if (x_compatible && y_compatible) return 1;
+            else return 0;
+        }
+
+It is looking for the partner in a square, and not in a circle, as it
+should be. It has a second problem: values that should be floating
+points are integers. Changing this function, in V3 (with the poisson
+reproduction), lets call it V3.1, to the following function:
+
+    int Verify_Distance (Population progenitors, int focal, int mate, Parameters info, int increase)
+        {
+            double x, x0, y, y0, r;
+            
+            r = info->radius + increase;
+
+            x0 = progenitors[focal]->x;
+            y0 = progenitors[focal]->y;
+            x = progenitors[mate]->x;
+            y = progenitors[mate]->y;
+
+            if (y0 >= info->lattice_lenght - r && y <= r)
+                y = y + info->lattice_lenght;
+
+            if (y0 <= r && y >= info->lattice_lenght - r)
+                y = y - info->lattice_lenght;
+
+            if (x0 >= info->lattice_width - r && x <= r)
+                x = x + info->lattice_width;
+
+            if (x0 <= r && x >= info->lattice_width - r)
+                x = x - info->lattice_lenght;
+
+            if ((x - x0) * (x - x0) + (y - y0) * (y - y0) <= r * r)
+                return 1;
+            else 
+                return 0;
+        }
+
+where it is checking if the partner is inside the focal’s circle, we
+obtain the following results:
+
+![](../gifs/complete_position_V3_1.gif)
+
+![](../figs/species/number_spp_V3_1.png)
+
+The results are the opposite of what was expected, but this is not the
+only positioning function. We have the function `Offspring_Position`,
+which puts the offspring in a square around the focal. It looks like
+this:
+
+    // In EvIBM, function Offspring_Position(), library functions.h
+    void Offspring_Position (Population progenitors, Population offspring, int baby, int focal, Parameters info)
+    {
+        double movement_x, movement_y;
+
+        movement_x = movement_y = 0;
+
+        offspring[baby]->x = progenitors[focal]->x;
+        offspring[baby]->y = progenitors[focal]->y;
+
+        if (random_number() <= 0.01) {
+            movement_y = (random_number()*2 - 1) * info->radius;
+            movement_x = (random_number()*2 - 1) * info->radius;
+
+            if (offspring[baby]->x + movement_x <= info->lattice_width && progenitors[focal]->x + movement_x >= 0)
+                offspring[baby]->x += movement_x;
+
+            else if (progenitors[focal]->x + movement_x > info->lattice_width)
+                offspring[baby]->x = offspring[baby]->x + movement_x - info->lattice_width;
+
+            else if (progenitors[focal]->x + movement_x < 0)
+                offspring[baby]->x = offspring[baby]->x + movement_x + info->lattice_width;
+
+            if (progenitors[focal]->y + movement_y <= info->lattice_lenght && progenitors[focal]->y + movement_y >= 0)
+                offspring[baby]->y = offspring[baby]->y + movement_y;
+
+            else if (progenitors[focal]->y + movement_y > info->lattice_lenght)
+                offspring[baby]->y = offspring[baby]->y + movement_y - info->lattice_lenght;
+
+            else if (progenitors[focal]->y + movement_y < 0)
+                offspring[baby]->y = offspring[baby]->y + movement_y + info->lattice_lenght;
+        }
+    }
+
+Notice it is also putting offspring in a square around the focal. The
+way to change it is sorting the movement inside the circle, by sorting a
+radius equal or less then the `info->radius`, and an angle theta, then,
+extracting x and y coordinates from it.
+
+    // In EvIBM, function Offspring_Position(), library functions.h
+    void Offspring_Position (Population progenitors, Population offspring, int baby, int focal, Parameters info)
+    {
+        double movement_x, movement_y;
+        double r, theta;
+
+        movement_x = movement_y = 0;
+
+        offspring[baby]->x = progenitors[focal]->x;
+        offspring[baby]->y = progenitors[focal]->y;
+
+        if (random_number() <= 0.01) {
+            r = random_number() * info->radius;
+            theta = rand_upto(360) + random_number();
+
+            movement_y = sin(theta) * r;
+            movement_x = cos(theta) * r;
+            
+      //[...]
+    }
+
+The results of this second version (V3.2, with both positioning
+functions changed) looks like this:
+
+![](../gifs/complete_position_V3_2.gif)
+
+![](../figs/species/number_spp_V3_2.png)
+
+Clearly it is not getting better, indicating more hidden errors in the
+model. The number os species should look sigmoidal, in this version it
+is varying too much. Also, the concentration is worse than ever.
+
+Let’s see what the second version (V2) looks like with the position
+changes?
+
+Changing just the `Verify_Distance`, we obtain:
+
+![](../gifs/complete_position_V2_1.gif)
+
+![](../figs/species/number_spp_V2_1.png)
+
+And changing also the `Offspring_Position`,
+
+![](../gifs/complete_position_V2_2.gif)
+
+![](../figs/species/number_spp_V2_2.png)
+
+In this last simulation, the number of species looks sigmoidal, but it
+explodes, and the positioning is still agglutinating, even if less, so
+problem not solved.
+
+Neither of the results are satisfactory enough, because they do not
+match what is expected by the model. Again, out of ideas…
 
 Bibliography
 ============

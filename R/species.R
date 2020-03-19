@@ -2,7 +2,7 @@
 library(ggplot2)
 
 # Read data
-number.spp <- read.csv(file ="./data/species/numspV3.csv", head = TRUE, sep=";")
+number.spp <- read.csv(file ="./data/species/numspV2_1.csv", head = TRUE, sep=";")
 
 # Define limits for the 
 max.spp <- max(number.spp[,2])
@@ -21,5 +21,5 @@ number.fig <-
         legend.margin = margin(-4, 4, -1, -1),
         plot.margin = unit(c(0.5,1.5,0.1,0.1), "cm"))
 
-ggsave("./figs/species/number_spp_V3.png", number.fig, width=5.5, height=4.5)
+ggsave("./figs/species/number_spp_V2_1.png", number.fig, width=5.5, height=4.5)
 
