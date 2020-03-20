@@ -307,7 +307,9 @@ changing the dispersal rate doesn’t make things very much better:
 
 ![](../figs/position/final_distribution_V3_multi.png)
 
-Different and more agglutinating patters arise.
+Different and more agglutinating patters arise. The number os species
+formed, shown below, is also very different than the expected sigmoidal
+distribution.
 
 ![](../figs/species/number_spp_V3_multi.png)
 
@@ -452,10 +454,9 @@ this:
         }
     }
 
-Notice it is also putting offspring in a square around the focal. The
-way to change it is sorting the movement inside the circle, by sorting a
-radius equal or less then the `info->radius`, and an angle theta, then,
-extracting x and y coordinates from it.
+The way to change it is sorting the movement inside the circle, by
+sorting a radius equal or less then the `info->radius`, and an angle
+theta, then, extracting x and y coordinates from it.
 
     // In EvIBM, function Offspring_Position(), library functions.h
     void Offspring_Position (Population progenitors, Population offspring, int baby, int focal, Parameters info)
@@ -507,6 +508,13 @@ And changing also the `Offspring_Position`,
 In this last simulation, the number of species looks sigmoidal, but it
 explodes, and the positioning is still agglutinating, even if less, so
 problem not solved.
+
+To me, the most weird part is that the reproduction functions are very
+similar in what they do, but they output very different results. The
+`Reproduction` with the poisson distribution seems like a more classy
+option, but tbe results are worse in terms of curve shape and
+agglutination, and only better in population fluctiation and total
+number of species formed.
 
 Neither of the results are satisfactory enough, because they do not
 match what is expected by the model. Again, out of ideas…
