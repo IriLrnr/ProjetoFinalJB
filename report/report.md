@@ -58,9 +58,12 @@ this behaviour of the position in the first twenty generations:
 ![](../gifs/agglutination.gif)
 
 While the expectations for the location is for the population to
-continue homogenically distributed. The goal of this report is to
-analyse graphically what is causing the agglutination, using the
-position gifs and the graphic of the number of species per time.
+continue homogenically distributed.
+
+The goal of this report is to analyse graphically what is causing the
+agglutination, using the position gifs and the graphic of the number of
+species per time. I will be adding to this report while I make tests and
+find errors.
 
 Analysis
 --------
@@ -111,7 +114,7 @@ generation. It outputs a simple plot
 
 ![](../figs/species/number_spp_V1.png)
 
-The format of ths graphic is right, but the slope is too inclined, it is
+The shape of ths graphic is right, but the curve is too steep, it is
 happening before it should. The amound of species is also bigger than
 the model pedicts.
 
@@ -127,80 +130,16 @@ reproduction, positioning, and choosing partner.
 The features of the model, inside those functions, that may produce
 those errors are (I think):
 
+-   The `Reproduction` function
 -   The dispersal of offspring
--   The fluctuation in `Reproduction`
 
-The dispersion is a characteristic of the model, each offspring has 99%
-chance of being in the same spot as the focal parent, and 1% chance of
-dispersal inside the radius of the parent.
+Or, could be the sum of various errors in the code.
 
-    // In EvIBM, function Offspring_Position(), library functions.h
-    if (random_number() <= 0.01) {
-      movement_y = random_number()*info->radius;
-        movement_x = random_number()*info->radius;
-        if (random_number() < 0.5) {
-            movement_x = -movement_x;
-            movement_y = -movement_y;
-        }
-      //...
-    }
+So far, we have two versions of the reproduction function. They are as
+follows:
 
-This dispersal rate result in collapse, but increasing this rate gives
-strange results. The dispersion with 1% chance of dispersal is in the
-gif above. If we change it we have the distribution of the last
-generation in the simulation looking like this
-
-![](../figs/position/final_distribution_V1_multi.png)
-
-and the number of species like this.
-
-![](../figs/species/number_spp_V1_multi.png)
-
-The results show that something is wrong. Although patterns in ecology
-are normal, the reason for this “stripes” of individuals and empty space
-is at this code chunk: the dispersion should cover all the directions
-around the focal. But it is clear in the code that `x` and `y` are
-always both positive, or both negative, wich is just a mistake. This
-will reflect on the growth of the number of species, because it changes
-the number of encounters between possible partners. When dispersal is
-too high, there is no formation of species, wich is predicted.
-
-The right code should for dispersion is this
-
-    // In EvIBM, function Offspring_Position(), library functions.h
-    if (random_number() <= 0.01) {
-      movement_y = (random_number()*2 -1)*info->radius;
-      movement_x = (random_number()*2 -1)*info->radius;
-      //...
-    }
-
-Changing the code, and using the “right” (1%) chance of dispersion, we
-obtain the distribution below:
-
-![](../gifs/complete_position_V2.gif)
-
-![](../figs/species/number_spp_V2.png)
-
-The distribution is a little better, and the number of species doesn’t
-change much. Changing again the disperse rate, the patters should
-dissapear
-
-![](../figs/position/final_distribution_V2_multi.png)
-
-And they do. But it is visible that there is still some agglutination.
-
-![](../figs/species/number_spp_V2_multi.png)
-
-Although the distribution looks better, and the number of species and
-distribution are more coherent, none of the tests above gave
-satisfactory enough results. Something is still wrong, and maybe the
-problem is in the `Reproduction` function.
-
-The intention of making the population fluctuate is to add realism to
-the model. Lets take a look at the `reproduction` function
-
-    // In EvIBM, function Reproduction(), library functions.h
-    void Reproduction (Graph G, Population progenitors, Population offspring, Parameters info)
+    // In EvIBM, function ReproductionF(), library functions.h
+    void ReproductionF (Graph G, Population progenitors, Population offspring, Parameters info)
     {   
         int focal, mate, other, i, n;
 
@@ -245,29 +184,15 @@ the model. Lets take a look at the `reproduction` function
         }
     }
 
-In the firt version of the model, let’s call it V1 (it is git tagged in
-branch JB, just type `git tag` to list them), the fluctiuation is done
-by simulating a sort with reposition. Each individual has a chance to
-reproduce, 63%, and if not, one of its neighbors is selected to be focal
-in it’s place. It if can’t find a partner, one more neighbor is
-selected, and if not found, the population decreases in one individual.
-If population is below 1000 individuals (this is the used size for
-`info->number_individuals` in the simulations), the individuals who are
-in the least dense regions have a chance to reproduce, increasing the
-population.
+This is the first one coded. It makes everyone reproduce with 67%
+chance, and if not, there are two chances for a neighbor to reproduce in
+place of the focal. If the population goes down, individuals with low
+density can reproduce in its place.
 
-The problem is that this fluctiuation is very artificial. There must be
-another way to do this.
-
-The idea is not to sort which individual reproduces or not, but sort an
-integer number which determines the number of children an individual
-will have as focal. This distribution have to include zeros, then is
-equivalent to the “death”, not reproducing. Then, the poisson
-distribution was chosen, where the mean has to be something that keeps
-the population around 1000 individuals. The code for this is
+Another alternative is
 
     // In EvIBM, function Reproduction(), library functions.h
-    void Reproduction (Graph G, Population progenitors, Population offspring, Parameters info)
+    void ReproductionP (Graph G, Population progenitors, Population offspring, Parameters info)
     {   
         int focal, mate, other, i, n;
         double mu;
@@ -296,14 +221,97 @@ the population around 1000 individuals. The code for this is
         }
     }
 
-I expected good results, but…
+This function uses the poisson distribution to sort the number of
+children an individual will have, and then create them, reproducing with
+different mates. It is interesting to notice that the number of 0’s are
+around 36%, which matches the 67% chance of reproduction from the
+`ReproductionF`. The mean of the poisson is calculated in a way that the
+population always tend to `info->number_individuals`. In all the tests
+bellow, the number of individuals in the simulation is 1000.
+
+The dispersion is a characteristic of the model, each offspring has 99%
+chance of being in the same spot as the focal parent, and 1% chance of
+dispersal inside the radius of the parent.
+
+    // In EvIBM, function Offspring_Position(), library functions.h
+    if (random_number() <= 0.01) {
+      movement_y = random_number()*info->radius;
+        movement_x = random_number()*info->radius;
+        if (random_number() < 0.5) {
+            movement_x = -movement_x;
+            movement_y = -movement_y;
+        }
+      //...
+    }
+
+This dispersal rate result in collapse, but increasing this rate gives
+strange results. The dispersion with 1% chance of dispersal is in the
+gif above. If we change it we have the distribution of the last
+generation in the simulation looking like this
+
+#### Using `ReproductionF ()`
+
+![](../figs/position/final_distribution_V1_multi.png)
+
+and the number of species like this.
+
+![](../figs/species/number_spp_V1_multi.png)
+
+The results show that something is wrong. Although patterns in ecology
+are normal, the reason for this “stripes” of individuals and empty space
+is at this code chunk: the dispersion should cover all the directions
+around the focal. But it is clear in the code that `x` and `y` are
+always both positive, or both negative, wich is just a mistake. This
+will reflect on the growth of the number of species, because it changes
+the number of encounters between possible partners. When dispersal is
+too high, there is no formation of species, wich is predicted.
+
+We can change the code so the dispersion could happen all around the
+focal.
+
+    // In EvIBM, function Offspring_Position(), library functions.h
+    if (random_number() <= 0.01) {
+      movement_y = (random_number()*2 -1)*info->radius;
+      movement_x = (random_number()*2 -1)*info->radius;
+      //...
+    }
+
+Changing the code, and using the “right” (1%) chance of dispersion, we
+obtain the distribution below:
+
+#### Using `ReproductionF ()`
+
+![](../gifs/complete_position_V2.gif)
+
+![](../figs/species/number_spp_V2.png)
+
+The distribution is a little better, and the number of species doesn’t
+change much. Changing again the disperse rate, the patters should
+dissapear
+
+![](../figs/position/final_distribution_V2_multi.png)
+
+And they do. But it is visible that there is still some agglutination.
+
+![](../figs/species/number_spp_V2_multi.png)
+
+Although the distribution looks better, and the number of species and
+distribution are more coherent, none of the tests above gave
+satisfactory enough results.
+
+#### Using `ReproductionP ()`
+
+I expected that changing the reproduction to poisson, fixing the mistake
+in the dispersal, and running the tests, the results would be better,
+but…
 
 ![](../gifs/complete_position_V3.gif)
 
 ![](../figs/species/number_spp_V3.png)
 
 more agglutinating and weird behaviour of number of species. And
-changing the dispersal rate doesn’t make things very much better:
+changing the dispersal rate does not correct the problem, because there
+is no species formation:
 
 ![](../figs/position/final_distribution_V3_multi.png)
 
@@ -376,8 +384,7 @@ one in rage of other, in all the versions cited here, looks like this:
 
 It is looking for the partner in a square, and not in a circle, as it
 should be. It has a second problem: values that should be floating
-points are integers. Changing this function, in V3 (with the poisson
-reproduction), lets call it V3.1, to the following function:
+points are integers. The alternative function is the following:
 
     int Verify_Distance (Population progenitors, int focal, int mate, Parameters info, int increase)
         {
@@ -410,6 +417,8 @@ reproduction), lets call it V3.1, to the following function:
 
 where it is checking if the partner is inside the focal’s circle, we
 obtain the following results:
+
+#### Using `ReproductionP ()`
 
 ![](../gifs/complete_position_V3_1.gif)
 
@@ -482,6 +491,8 @@ theta, then, extracting x and y coordinates from it.
 The results of this second version (V3.2, with both positioning
 functions changed) looks like this:
 
+#### Using `ReproductionP ()`
+
 ![](../gifs/complete_position_V3_2.gif)
 
 ![](../figs/species/number_spp_V3_2.png)
@@ -490,8 +501,7 @@ Clearly it is not getting better, indicating more hidden errors in the
 model. The number os species should look sigmoidal, in this version it
 is varying too much. Also, the concentration is worse than ever.
 
-Let’s see what the second version (V2) looks like with the position
-changes?
+#### Using `ReproductionF ()`
 
 Changing just the `Verify_Distance`, we obtain:
 
@@ -511,13 +521,69 @@ problem not solved.
 
 To me, the most weird part is that the reproduction functions are very
 similar in what they do, but they output very different results. The
-`Reproduction` with the poisson distribution seems like a more classy
-option, but tbe results are worse in terms of curve shape and
-agglutination, and only better in population fluctiation and total
-number of species formed.
+`ReproductionP` seems like a more classy option, but tbe results are
+worse in terms of curve shape and agglutination, and only better in
+population fluctiation and total number of species formed.
 
-Neither of the results are satisfactory enough, because they do not
-match what is expected by the model. Again, out of ideas…
+Continuing with the analysis, a problem was found in `ReproductionP`.
+The population was increasing even if the baby was not actually created.
+The new version looks like this:
+
+    // In EvIBM, function ReproductionP(), library functions.h
+    void ReproductionP (Graph G, Population progenitors, Population offspring, Parameters info)
+        {   
+            int focal, mate, other, n, baby;
+            double mu;
+            unsigned int number_children; 
+            int parent_population_size;
+
+            baby = 0;
+
+            parent_population_size = info->population_size;
+
+            mu = ((double) info->number_individuals) / (parent_population_size);
+
+            for (focal = 0; focal < (G->U); focal++) {
+                number_children = poisson (mu);
+                for (n = 0; n < number_children; n++) {
+                    mate = Choose_Mate (G, focal, progenitors, info);
+                    if (mate != -1) {
+                        Create_Offspring (progenitors, offspring, baby, focal, mate, info);
+                        baby ++;
+                        info->population_size ++;
+                    }
+                }
+                info->population_size --; /* The focal dies */
+            }
+            printf("pop size: %d\n", info->population_size);
+        }
+
+Another problem was noticed: in the last attempt to fix the
+`Offspring_Position`, the sorting of the angle was wrong, because it had
+to be in radians. Changing this once more to
+
+    // In EvIBM, function Offspring_Position(), library functions.h
+    theta = random_number() * 2 * 3.14159265359;
+
+Now, the test results:
+
+#### Using `ReproductionP ()`
+
+When we fix the `ReproductionP` as shown above, things do not get
+better.
+
+![](../gifs/complete_position_V3_4.gif)
+
+![](../figs/species/number_spp_V3_4.png)
+
+#### Using `ReproductionF ()`
+
+Changing the just the theta angle doesn’t change much when using the
+`ReproductionF`:
+
+![](../gifs/complete_position_V2_3.gif)
+
+![](../figs/species/number_spp_V2_3.png)
 
 Bibliography
 ============
