@@ -50,18 +50,18 @@ species<sup>2</sup>.
 
 This model is spatial model, so the positioning of individuals plays a
 central roll in species formation. In the current version, the species
-are agglutinating in points in the space, and resulting in a
+are clustering in points in the space, and resulting in a
 faster-than-expected exponential growth of the number of species - it
-works as a parapatric model, when it should be allopatric. The result is
-this behaviour of the position in the first twenty generations:
+works as if there are physical barriers, when there is not. The result
+is this behaviour of the position in the first twenty generations:
 
-![](../gifs/agglutination.gif)
+![](../gifs/clustering.gif)
 
 While the expectations for the location is for the population to
 continue homogenically distributed.
 
 The goal of this report is to analyse graphically what is causing the
-agglutination, using the position gifs and the graphic of the number of
+clustering, using the position gifs and the graphic of the number of
 species per time. I will be adding to this report while I make tests and
 find errors.
 
@@ -96,7 +96,7 @@ full simulation gif is
 
 It shows the movement of the individuals throughout the simulation,
 indicating some problems: there is always around 1000 individuals. Why
-are they agglutinating? Why do they only move in lines?
+are they clustering? Why do they only move in lines?
 
 In the gif above, we can watch species form. How many? The R script
 `species.R` recieves a table of the form
@@ -123,7 +123,7 @@ Both images suggest implementation problems.
 ### Changes in the code
 
 Some functions of the implementation cannot be tested outside the
-simulation, and some problems, like agglutination, may appear as a
+simulation, and some problems, like clustering, may appear as a
 “background mistake”. Those functions are the ones responsible for
 reproduction, positioning, and choosing partner.
 
@@ -291,7 +291,7 @@ dissapear
 
 ![](../figs/position/final_distribution_V2_multi.png)
 
-And they do. But it is visible that there is still some agglutination.
+And they do. But it is visible that there is still some clustering.
 
 ![](../figs/species/number_spp_V2_multi.png)
 
@@ -309,13 +309,13 @@ but…
 
 ![](../figs/species/number_spp_V3.png)
 
-more agglutinating and weird behaviour of number of species. And
-changing the dispersal rate does not correct the problem, because there
-is no species formation:
+more clustering and weird behaviour of number of species. And changing
+the dispersal rate does not correct the problem, because there is no
+species formation:
 
 ![](../figs/position/final_distribution_V3_multi.png)
 
-Different and more agglutinating patters arise. The number os species
+Different and more clustering patters arise. The number os species
 formed, shown below, is also very different than the expected sigmoidal
 distribution.
 
@@ -516,13 +516,13 @@ And changing also the `Offspring_Position`,
 ![](../figs/species/number_spp_V2_2.png)
 
 In this last simulation, the number of species looks sigmoidal, but it
-explodes, and the positioning is still agglutinating, even if less, so
+explodes, and the positioning is still clustering, even if less, so
 problem not solved.
 
 To me, the most weird part is that the reproduction functions are very
 similar in what they do, but they output very different results. The
 `ReproductionP` seems like a more classy option, but tbe results are
-worse in terms of curve shape and agglutination, and only better in
+worse in terms of curve shape and clustering, and only better in
 population fluctiation and total number of species formed.
 
 Continuing with the analysis, a problem was found in `ReproductionP`.
