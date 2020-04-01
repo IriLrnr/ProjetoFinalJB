@@ -112,7 +112,7 @@ In the gif above, we can watch species form. How many? The R script
 where `gen` is the generation and `sp` is the number of species in that
 generation. It outputs a simple plot
 
-![](../figs/species/number_spp_V1.png)
+![](../figs/species/number_spp_V1.png%20=250x250)
 
 The shape of ths graphic is right, but the curve is too steep, it is
 happening before it should. The amound of species is also bigger than
