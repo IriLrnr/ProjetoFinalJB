@@ -585,6 +585,68 @@ Changing the just the theta angle doesn’t change much when using the
 
 ![](../figs/species/number_spp_V2_3.png)
 
+Conclusion
+----------
+
+Even if the tests did not fix my problem, they healped find problems and
+fix them. It is obvious that the `ReproductionF ()` function shows
+results more coherent with what was expected, even though the poisson
+was a “better looking” function.
+
+The problems found in positioning and verifying distances were solved
+and they did make the program better.
+
+### PLOT TWIST
+
+Talking to my advisor just 2 days before the deadline for this project,
+we noticed an error (in comparison to the original model). When an
+individual does not reproduce (in `ReproductionF ()`), it is replaced by
+a neighbor, who becomes focal. But in the original model, the position
+of the offspring of this new focal is of the old focal. This preservs
+the old positioning, and thoygh is a computational fix, it can be viwed
+as the niche wich the offspring of the old focal would occupy.
+Alternatively, because this new focal is in the range of the old focal,
+it could be seen as an increase in the chance of dispersal of the
+offspring.
+
+the code fix is in `Create_Offspring ()`, it will receive both the focal
+and the other (new focal).
+
+    // In EvIBM, function Create_Offspring(), library functions.h
+    void Create_Offspring (Population progenitors, Population offspring, int baby, int focal, int other, int mate, Parameters info)
+    {
+      int i;
+        
+        Offspring_Position(progenitors, offspring, baby, focal, info);
+
+        for (i = 0; i < info->genome_size; i++) {
+            if (progenitors[other]->genome[i] != progenitors[mate]->genome[i]) {
+                if (rand_upto(1) == 1) {
+                    offspring[baby]->genome[i] = progenitors[mate]->genome[i];
+                }
+                else {
+                    offspring[baby]->genome[i] = progenitors[other]->genome[i];
+                }
+            }
+            else {
+                offspring[baby]->genome[i] = progenitors[mate]->genome[i];
+            }
+        }
+
+        for (i = 0; i < info->genome_size; i++) {
+            if (random_number() <= 0.00025) {
+                mutation (offspring, baby, i);
+            }
+        }
+    }
+
+And the results are exactly what we expected, meaining that the rest of
+the program is working as it should (there may be still minor problems).
+
+![](../gifs/complete_position_V6.gif)
+
+![](../figs/species/number_spp_V6.png)
+
 Bibliography
 ============
 

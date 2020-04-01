@@ -7,7 +7,7 @@ library(gifski)
 library(png)
 
 # Catch table with location values
-ind.loc <- read.csv(file = "./data/position/indlocV3_t.csv", sep = ";")
+ind.loc <- read.csv(file = "./data/position/indlocV6.csv", sep = ";")
 
 # Find the needed number of frames, the last value of the data frame
 x <- ind.loc[,1]
@@ -34,4 +34,4 @@ anim <- individuals.fig +
   transition_time(gen) + ggtitle("Generation {frame}")
 
 # save gif
-anim_save("complete_position_V3_t.gif", animate(anim, nframes=ngen, height=450, width=550), path = "./gifs")
+anim_save("complete_position_V6.gif", animate(anim, nframes=ngen, height=450, width=550), path = "./gifs")
